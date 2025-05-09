@@ -1,0 +1,119 @@
+name: Update Zed Editor Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_check:
+        description: 'Force check for updates even if no new release'
+        type: boolean
+        default: false
+      version:
+        description: 'Specific version to update to (optional)'
+        required: false
+        type: string
+  schedule:
+    - cron: '0 12 * * 1,4'
+
+jobs:
+  update-packages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v25
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Check for Zed Editor updates
+        id: check-zed-version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            LATEST_VERSION="${{ github.event.inputs.version }}"
+            echo "Using provided version: $LATEST_VERSION"
+          else
+            echo "Checking for latest release..."
+            LATEST_VERSION=$(curl -s "https://api.github.com/repos/zed-industries/zed/releases" | \
+              grep -o '"tag_name": "v[0-9]\+\.[0-9]\+\.[0-9]\+"' | \
+              grep -v -- "-pre" | \
+              grep -v "0\.999999\.0" | \
+              grep -v "0\.9999-temporary" | \
+              head -n 1 | \
+              cut -d'"' -f4 | \
+              sed 's/^v//')
+          fi
+          
+          if [ -z "$LATEST_VERSION" ]; then
+            echo "::error::Could not determine latest version"
+            exit 1
+          fi
+          
+          echo "Latest Zed Editor version: $LATEST_VERSION"
+          
+          CURRENT_VERSION=$(grep -oP 'version = "([0-9]+\.[0-9]+\.[0-9]+)"' packages/zed-editor/default.nix | head -1 | sed 's/version = "//;s/"//')
+          echo "Current Zed Editor version: $CURRENT_VERSION"
+          
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "::error::Could not determine current version"
+            exit 1
+          fi
+          
+          if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ] || [ "${{ github.event.inputs.force_check }}" == "true" ]; then
+            echo "update_needed=true" >> $GITHUB_OUTPUT
+            echo "new_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "No update needed."
+            echo "update_needed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update package versions
+        if: steps.check-zed-version.outputs.update_needed == 'true'
+        run: |
+          NEW_VERSION="${{ steps.check-zed-version.outputs.new_version }}"
+          echo "Updating to version $NEW_VERSION"
+          
+          sed -i "s/version = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/version = \"$NEW_VERSION\"/" packages/zed-editor/default.nix
+          sed -i "s/version = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/version = \"$NEW_VERSION\"/" packages/zed-editor-bin/default.nix
+
+      - name: Update flake.lock
+        if: steps.check-zed-version.outputs.update_needed == 'true'
+        run: |
+          nix flake update
+
+      - name: Create Pull Request
+        if: steps.check-zed-version.outputs.update_needed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update Zed Editor to ${{ steps.check-zed-version.outputs.new_version }}"
+          branch: update-zed-editor
+          delete-branch: true
+          title: "Update Zed Editor to ${{ steps.check-zed-version.outputs.new_version }}"
+          body: |
+            This PR updates Zed Editor packages from `${{ steps.check-zed-version.outputs.current_version }}` to `${{ steps.check-zed-version.outputs.new_version }}`.
+            
+            Changes:
+            - Updated package versions in both `zed-editor` and `zed-editor-bin`
+            - Updated `flake.lock`
+            
+            ## Manual steps needed:
+            
+            The following steps need to be performed manually after checking out this PR:
+            
+            ```bash
+            # Update cargoHash and source hash for zed-editor
+            nix-prefetch-url --unpack https://github.com/zed-industries/zed/archive/refs/tags/v${{ steps.check-zed-version.outputs.new_version }}.tar.gz
+            
+            # Update binary hashes in zed-editor-bin/default.nix
+            nix-prefetch-url https://github.com/zed-industries/zed/releases/download/v${{ steps.check-zed-version.outputs.new_version }}/zed-linux-x86_64.tar.gz
+            nix-prefetch-url https://github.com/zed-industries/zed/releases/download/v${{ steps.check-zed-version.outputs.new_version }}/zed-linux-aarch64.tar.gz
+            nix-prefetch-url https://github.com/zed-industries/zed/releases/download/v${{ steps.check-zed-version.outputs.new_version }}/Zed-x86_64.dmg
+            nix-prefetch-url https://github.com/zed-industries/zed/releases/download/v${{ steps.check-zed-version.outputs.new_version }}/Zed-aarch64.dmg
+            ```
+            
+            This update was initiated automatically by GitHub Actions.
