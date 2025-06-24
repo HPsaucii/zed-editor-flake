@@ -18,7 +18,7 @@
   testers,
   lib,
 }: let
-  version = "0.192.2-pre";
+  version = "0.192.3-pre";
 
   # Map from Nix system → { url, sha256, type }
   assets = {
@@ -26,28 +26,28 @@
       url =
         "https://github.com/zed-industries/zed/releases/download/"
         + "v${version}/zed-linux-x86_64.tar.gz";
-      sha256 = "sha256-RW76/dRZmk5dHBDJLwxKLA/bD9wOEwAdxwbQ36OjYGk=";
+      sha256 = "sha256-juP6wjW6kvimUPucgsUQbZR+aGzoD/xosY0LCtKgF5c=";
       type = "tar.gz";
     };
     "aarch64-linux" = {
       url =
         "https://github.com/zed-industries/zed/releases/download/"
         + "v${version}/zed-linux-aarch64.tar.gz";
-      sha256 = "sha256-gXXk2e0viGdmKsApVpsgwW9SHGIjlRZx5P8MIySi4e0=";
+      sha256 = "sha256-G6+y0yaUQkc85cNBju5VoeD9JCIVJnpIAwb26Iglssk=";
       type = "tar.gz";
     };
     "x86_64-darwin" = {
       url =
         "https://github.com/zed-industries/zed/releases/download/"
         + "v${version}/Zed-x86_64.dmg";
-      sha256 = "sha256-RHwnlArsKBEeA6K/fXSa+zd/IojhQAKbm7UpfBVM+xo=";
+      sha256 = "sha256-GBg7PnR6TIrbuagcleMSRRYbJVFIXmqn8p/t1vgtTek=";
       type = "dmg";
     };
     "aarch64-darwin" = {
       url =
         "https://github.com/zed-industries/zed/releases/download/"
         + "v${version}/Zed-aarch64.dmg";
-      sha256 = "sha256-VnkBooyh4K1OMsuAV4YP76WG9HexoYWXRJmY+sfwHMc=";
+      sha256 = "sha256-MjGL+IjsIZl8umy+jbUpMLvl+h7ab9TezZhmDEX3y6s=";
       type = "dmg";
     };
   };
