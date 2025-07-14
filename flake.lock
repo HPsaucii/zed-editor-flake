@@ -48,27 +48,10 @@
         "type": "github"
       }
     },
-    "patched-nixpkgs": {
-      "locked": {
-        "lastModified": 1751581788,
-        "narHash": "sha256-oYHn5qiRNkWE35VQqoeeZQZ+vr89kyUFyAPb0yD3HaI=",
-        "owner": "TomaSajt",
-        "repo": "nixpkgs",
-        "rev": "cce9f4e9da34ceea0efa7ad7588256643f4da012",
-        "type": "github"
-      },
-      "original": {
-        "owner": "TomaSajt",
-        "ref": "fetch-cargo-vendor-dup",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs",
-        "patched-nixpkgs": "patched-nixpkgs"
       }
     }
   },
