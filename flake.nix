@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
-    patched-nixpkgs.url = "github:TomaSajt/nixpkgs?ref=fetch-cargo-vendor-dup";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
@@ -28,14 +27,12 @@
           self',
           inputs',
           ...
-        }: let
-          rustPlatform = inputs'.patched-nixpkgs.legacyPackages.rustPlatform;
-        in {
+        }: {
           packages = {
-            zed-editor = pkgs.callPackage ./packages/zed-editor {rustPlatform = rustPlatform;};
+            zed-editor = pkgs.callPackage ./packages/zed-editor {};
             zed-editor-fhs = self'.packages.zed-editor.passthru.fhs;
 
-            zed-editor-preview = pkgs.callPackage ./packages/zed-editor-preview {rustPlatform = rustPlatform;};
+            zed-editor-preview = pkgs.callPackage ./packages/zed-editor-preview {};
             zed-editor-preview-fhs = self'.packages.zed-editor-preview.passthru.fhs;
 
             zed-editor-bin = pkgs.callPackage ./packages/zed-editor-bin {};
