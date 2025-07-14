@@ -9,7 +9,6 @@
   outputs = inputs @ {
     flake-parts,
     nixpkgs,
-    patched-nixpkgs,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} (
