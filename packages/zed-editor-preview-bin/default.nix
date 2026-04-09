@@ -11,6 +11,7 @@
   libxkbcommon,
   zlib,
   alsa-lib,
+  glib,
   wayland,
   vulkan-loader,
   buildFHSEnv,
@@ -67,6 +68,7 @@
     libxkbcommon
     zlib
     alsa-lib
+    glib
     wayland
     vulkan-loader
   ];
