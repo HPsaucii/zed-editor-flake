@@ -16,6 +16,7 @@
   zlib,
   zstd,
   alsa-lib,
+  glib,
   libxkbcommon,
   wayland,
   libglvnd,
@@ -160,6 +161,7 @@ in
       ]
       ++ lib.optionals stdenv.hostPlatform.isLinux [
         alsa-lib
+        glib
         libxkbcommon
         wayland
         xorg.libxcb
